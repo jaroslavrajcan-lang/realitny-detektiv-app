@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="sk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Realitný Detektív | Profesionálne preverovanie nehnuteľností</title>
+    <meta name="description" content="Nekupujte mačku vo vreci. Odhalíme skryté vady, právne nezrovnalosti a reálnu trhovú hodnotu vašej budúcej nehnuteľnosti skôr, než podpíšete zmluvu." />
+    
+    <!-- Open Graph / Facebook / WhatsApp -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Realitný Detektív | Profesionálne preverovanie nehnuteľností" />
+    <meta property="og:description" content="Technický audit, právna analýza a cenový odhad nehnuteľnosti. Chráňte svoje peniaze pred kúpou." />
+    <meta property="og:image" content="https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:title" content="Realitný Detektív" />
+    <meta property="twitter:description" content="Nekupujte mačku vo vreci. Profesionálny audit nehnuteľnosti pred kúpou." />
+    
+    <!-- Mobile Theme Color -->
+    <meta name="theme-color" content="#111827" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              gold: {
+                400: '#FACC15',
+                500: '#EAB308',
+                600: '#CA8A04',
+              }
+            },
+            animation: {
+              'fade-in': 'fadeIn 1s ease-out',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      body { font-family: 'Inter', sans-serif; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.555.0",
+    "vite": "https://aistudiocdn.com/vite@^7.2.4",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@^5.1.1"
+  }
+}
+</script>
+</head>
+  <body class="bg-gray-900 text-white antialiased">
+    <div id="root"></div>
+    <!-- DÔLEŽITÉ: Pre Vite/Vercel musí byť cesta relatívna k rootu -->
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>
