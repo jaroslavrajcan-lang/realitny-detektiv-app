@@ -5,7 +5,7 @@ import { Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 // DÔLEŽITÉ: Tu vložte váš odkaz z Formspree.io
 // Príklad: "https://formspree.io/f/xpzvqrzb"
 // ------------------------------------------------------------------
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEM_VLOZTE_VAS_FORMSPREE_ODKAZ";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/xanggdyo";
 
 export const LeadForm: React.FC = () => {
   const [formData, setFormData] = useState({
