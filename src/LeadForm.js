@@ -1,98 +1,238 @@
-import React from 'react';
-import { ViewState, LandingProps } from '../types';
-import { CheckCircle, AlertTriangle, ShieldCheck, ArrowRight, Search } from 'lucide-react';
+import React, { useState } from 'react';
+import { Send, CheckCircle2, Loader2, AlertCircle } from 'lucide-react';
 
-export const LandingPage: React.FC<LandingProps> = ({ onNavigate }) => {
-  return (
-    <div className="space-y-16 animate-fade-in pb-12">
-      
-      {/* Hero Section */}
-      <section className="text-center space-y-8 pt-10">
-        <div className="inline-flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700 text-sm text-gold-500 mb-4">
-          <ShieldCheck size={16} />
-          <span>Profesionálne preverovanie nehnuteľností</span>
+// ------------------------------------------------------------------
+// DÔLEŽITÉ: Tu vložte váš odkaz z Formspree.io
+// Príklad: "https://formspree.io/f/xpzvqrzb"
+// ------------------------------------------------------------------
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEM_VLOZTE_VAS_FORMSPREE_ODKAZ";
+
+export const LeadForm: React.FC = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    propertyUrl: '',
+    message: '',
+    gdprConsent: false // Nový stav pre checkbox
+  });
+  
+  const [status, setStatus] = useState<'IDLE' | 'SUBMITTING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  const [errorMessage, setErrorMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Validácia checkboxu (pre istotu, hoci HTML 'required' to rieši tiež)
+    if (!formData.gdprConsent) {
+      setErrorMessage("Pre odoslanie musíte súhlasiť so spracovaním osobných údajov.");
+      setStatus('ERROR');
+      return;
+    }
+
+    // Kontrola, či užívateľ vymenil odkaz (aby sa predišlo chybám v demu)
+    if (FORMSPREE_ENDPOINT.includes("SEM_VLOZTE")) {
+      alert("Chyba konfigurácie: V súbore LeadForm.tsx musíte nastaviť váš Formspree odkaz.");
+      return;
+    }
+
+    setStatus('SUBMITTING');
+    
+    try {
+      // Odosielame dáta (bez gdprConsent booleanu, ten nie je pre server podstatný, podstatné je že prešiel)
+      // Pridávame _subject pre krajší e-mail
+      const { gdprConsent, ...dataToSend } = formData;
+      const payload = {
+        ...dataToSend,
+        _subject: "Nová objednávka - Realitný Detektív"
+      };
+
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (response.ok) {
+        setStatus('SUCCESS');
+      } else {
+        const data = await response.json();
+        if (Object.prototype.hasOwnProperty.call(data, 'errors')) {
+          setErrorMessage(data["errors"].map((error: any) => error["message"]).join(", "));
+        } else {
+          setErrorMessage("Nastala chyba pri odosielaní. Skúste to prosím znova.");
+        }
+        setStatus('ERROR');
+      }
+    } catch (error) {
+      setErrorMessage("Nepodarilo sa spojiť so serverom.");
+      setStatus('ERROR');
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    // Špeciálne spracovanie pre checkbox
+    const fieldValue = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+
+    setFormData(prev => ({ ...prev, [name]: fieldValue }));
+  };
+
+  if (status === 'SUCCESS') {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 text-center animate-fade-in bg-gray-800/30 rounded-2xl border border-gray-800 p-8">
+        <div className="bg-green-500/20 p-6 rounded-full text-green-500 mb-6 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
+          <CheckCircle2 size={64} />
         </div>
-        
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent pb-2">
-          Nekupujte mačku<br/> vo vreci.
-        </h1>
-        
-        <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-          Odhalíme skryté vady, právne nezrovnalosti a reálnu trhovú hodnotu vašej budúcej nehnuteľnosti skôr, než podpíšete zmluvu.
+        <h2 className="text-3xl font-bold text-white mb-4">Gratulujem. Vaša žiadosť bola úspešne odoslaná.</h2>
+        <p className="text-gray-300 max-w-md text-lg">
+          Ďakujeme. Vaše údaje sme prijali. Náš detektív vás bude kontaktovať telefonicky alebo emailom do 24 hodín pre dohodnutie ďalšieho postupu.
         </p>
-
-        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-          <button 
-            onClick={() => onNavigate(ViewState.FORM)}
-            className="bg-gold-500 hover:bg-gold-600 text-gray-900 font-bold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg shadow-gold-500/20 flex items-center justify-center space-x-2"
+        <div className="mt-8 pt-8 border-t border-gray-700 w-full max-w-xs">
+           <button 
+            onClick={() => {
+              setStatus('IDLE');
+              setFormData({ name: '', email: '', phone: '', propertyUrl: '', message: '', gdprConsent: false });
+            }}
+            className="text-gold-500 hover:text-gold-400 font-medium hover:underline underline-offset-4 transition-colors"
           >
-            <span>Mám záujem o preverenie</span>
-            <ArrowRight size={20} />
-          </button>
-          
-          <button 
-            onClick={() => onNavigate(ViewState.QR)}
-            className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-8 rounded-xl transition-all border border-gray-700"
-          >
-            Kontaktovať detektíva
+            Odoslať ďalšiu žiadosť
           </button>
         </div>
-      </section>
+      </div>
+    );
+  }
 
-      {/* Features Grid */}
-      <section className="grid md:grid-cols-3 gap-8 pt-12">
-        <div className="bg-gray-800/40 p-8 rounded-2xl border border-gray-800 hover:border-gold-500/30 transition-colors">
-          <div className="bg-blue-500/10 w-12 h-12 flex items-center justify-center rounded-lg mb-6 text-blue-400">
-            <Search size={24} />
+  return (
+    <div className="max-w-2xl mx-auto">
+      <div className="text-center mb-10">
+        <h2 className="text-3xl font-bold mb-4">Objednávka preverenia</h2>
+        <p className="text-gray-400">
+          Vyplňte formulár nižšie a my sa postaráme o zvyšok. Garantujeme diskrétnosť a profesionálny prístup.
+        </p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/30 p-8 rounded-2xl border border-gray-800 shadow-xl">
+        
+        {status === 'ERROR' && (
+          <div className="bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 rounded-lg flex items-start gap-3">
+            <AlertCircle size={20} className="mt-0.5 shrink-0" />
+            <p className="text-sm">{errorMessage || "Odoslanie zlyhalo."}</p>
           </div>
-          <h3 className="text-xl font-bold mb-3 text-white">Technický audit</h3>
-          <p className="text-gray-400">
-            Kontrola vlhkosti, statiky, rozvodov a skrytých závad, ktoré voľným okom neuvidíte.
-          </p>
+        )}
+
+        <div className="grid md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Meno a Priezvisko *</label>
+            <input
+              required
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Jozef Novák"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent outline-none transition-all placeholder-gray-600"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Telefónne číslo *</label>
+            <input
+              required
+              type="tel"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              placeholder="+421 9xx xxx xxx"
+              className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent outline-none transition-all placeholder-gray-600"
+            />
+          </div>
         </div>
 
-        <div className="bg-gray-800/40 p-8 rounded-2xl border border-gray-800 hover:border-gold-500/30 transition-colors">
-          <div className="bg-red-500/10 w-12 h-12 flex items-center justify-center rounded-lg mb-6 text-red-400">
-            <AlertTriangle size={24} />
-          </div>
-          <h3 className="text-xl font-bold mb-3 text-white">Právna analýza</h3>
-          <p className="text-gray-400">
-            Preverenie tiarch, vecných bremien, exekúcií a správnosti katastrálnych údajov.
-          </p>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Emailová adresa *</label>
+          <input
+            required
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="jozef@email.sk"
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent outline-none transition-all placeholder-gray-600"
+          />
         </div>
 
-        <div className="bg-gray-800/40 p-8 rounded-2xl border border-gray-800 hover:border-gold-500/30 transition-colors">
-          <div className="bg-green-500/10 w-12 h-12 flex items-center justify-center rounded-lg mb-6 text-green-400">
-            <CheckCircle size={24} />
-          </div>
-          <h3 className="text-xl font-bold mb-3 text-white">Cenový odhad</h3>
-          <p className="text-gray-400">
-            Nezávislé posúdenie trhovej ceny, aby ste nepreplatili nehnuteľnosť o tisíce eur.
-          </p>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Link na nehnuteľnosť, ktorú chcete preveriť (nepovinné)</label>
+          <input
+            type="url"
+            name="propertyUrl"
+            value={formData.propertyUrl}
+            onChange={handleChange}
+            placeholder="https://reality.sk/..."
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent outline-none transition-all placeholder-gray-600"
+          />
         </div>
-      </section>
 
-      {/* Statistics / Trust Section */}
-      <section className="bg-gray-950 rounded-3xl p-8 md:p-12 border border-gray-800">
-        <div className="grid md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-800">
-          <div className="p-4">
-            <div className="text-4xl font-bold text-gold-500 mb-2">250+</div>
-            <div className="text-sm text-gray-400">Preverených nehnuteľností</div>
-          </div>
-          <div className="p-4">
-            <div className="text-4xl font-bold text-gold-500 mb-2">€1.3M</div>
-            <div className="text-sm text-gray-400">Ušetrených klientom</div>
-          </div>
-          <div className="p-4">
-            <div className="text-4xl font-bold text-gold-500 mb-2">37</div>
-            <div className="text-sm text-gray-400">Odhalených podvodov</div>
-          </div>
-          <div className="p-4">
-            <div className="text-4xl font-bold text-gold-500 mb-2">100%</div>
-            <div className="text-sm text-gray-400">Nezávislosť</div>
-          </div>
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-gray-300">Správa pre detektíva</label>
+          <textarea
+            name="message"
+            rows={4}
+            value={formData.message}
+            onChange={handleChange}
+            placeholder="O čo máte konkrétne záujem? Na čo si dať pozor?"
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-4 py-3 text-white focus:ring-2 focus:ring-gold-500 focus:border-transparent outline-none transition-all placeholder-gray-600 resize-none"
+          ></textarea>
         </div>
-      </section>
+
+        {/* GDPR Checkbox Sekcia */}
+        <div className="pt-2">
+          <label className="flex items-start space-x-3 cursor-pointer group">
+            <div className="relative flex items-center pt-0.5">
+              <input
+                required
+                type="checkbox"
+                name="gdprConsent"
+                checked={formData.gdprConsent}
+                onChange={handleChange}
+                className="peer h-5 w-5 cursor-pointer appearance-none rounded border border-gray-600 bg-gray-900 transition-all checked:border-gold-500 checked:bg-gold-500 hover:border-gold-400"
+              />
+              <CheckCircle2 
+                size={14} 
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-[40%] text-gray-900 opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity" 
+              />
+            </div>
+            <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors select-none">
+              Súhlasím so spracovaním osobných údajov za účelom kontaktovania ohľadom mojej objednávky. *
+            </span>
+          </label>
+        </div>
+
+        <button
+          type="submit"
+          disabled={status === 'SUBMITTING' || !formData.gdprConsent}
+          className="w-full bg-gold-500 hover:bg-gold-600 disabled:bg-gray-700 disabled:text-gray-500 text-gray-900 font-bold py-4 rounded-xl transition-all shadow-lg shadow-gold-500/20 disabled:shadow-none flex items-center justify-center space-x-2 disabled:cursor-not-allowed transform active:scale-[0.98]"
+        >
+          {status === 'SUBMITTING' ? (
+            <>
+              <Loader2 className="animate-spin" size={20} />
+              <span>Odosielam...</span>
+            </>
+          ) : (
+            <>
+              <span>Odoslať nezáväznú objednávku</span>
+              <Send size={20} />
+            </>
+          )}
+        </button>
+        
+        <p className="text-xs text-gray-600 text-center">
+          Polia označené hviezdičkou (*) sú povinné.
+        </p>
+      </form>
     </div>
   );
 };
