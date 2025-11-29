@@ -1,215 +1,98 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { ViewState, LandingProps } from '../types';
+import { CheckCircle, AlertTriangle, ShieldCheck, ArrowRight, Search } from 'lucide-react';
 
-// POZNÁMKA: Ikony sme nahradili textovými symbolmi,
-// pretože balíček "lucide-react" nie je nainštalovaný.
-// ------------------------------------------------------------------
-// DÔLEŽITÉ: Tu vložte váš odkaz z Formspree.io pre zasielanie emailov
-// Príklad: "https://formspree.io/f/xpzvqrzb"
-// ------------------------------------------------------------------
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/SEM_VLOZTE_VAS_FORMSPREE_ODKAZ";
-
-// Placeholder pre ikony
-const IconSend = ({ size }) => <span style={{fontSize: size === 20 ? '1.2em' : 'inherit'}}>&gt;</span>;
-const IconCheck = ({ size }) => <span style={{fontSize: size === 64 ? '2em' : 'inherit'}}>✔</span>;
-const IconLoader = ({ size }) => <span className="animate-spin" style={{fontSize: size === 20 ? '1.2em' : 'inherit'}}>⚙</span>;
-const IconAlert = ({ size }) => <span style={{fontSize: size === 20 ? '1.2em' : 'inherit'}}>!</span>;
-
-
-export const LeadForm = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    propertyUrl: '',
-    message: '',
-    gdprConsent: false
-  });
-  
-  const [status, setStatus] = useState('IDLE');
-  const [errorMessage, setErrorMessage] = useState('');
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.gdprConsent) {
-      setErrorMessage("Pre odoslanie musíte súhlasiť so spracovaním osobných údajov.");
-      setStatus('ERROR');
-      return;
-    }
-
-    // Upozornenie, že treba vymeniť odkaz
-    if (FORMSPREE_ENDPOINT.includes("SEM_VLOZTE")) {
-      alert("Chyba konfigurácie: V súbore LeadForm.js musíte nastaviť váš Formspree odkaz. Formulár nebude odoslaný.");
-      return;
-    }
-
-    setStatus('SUBMITTING');
-    setErrorMessage('');
-    
-    try {
-      const { gdprConsent, ...dataToSend } = formData;
-      const payload = {
-        ...dataToSend,
-        _subject: "Nová objednávka - Realitný Detektív"
-      };
-
-      const response = await fetch(FORMSPREE_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-
-      if (response.ok) {
-        setStatus('SUCCESS');
-      } else {
-        const data = await response.json();
-        setErrorMessage(data["errors"] ? data["errors"].map(error => error["message"]).join(", ") : "Nastala chyba pri odosielaní. Skúste to prosím znova.");
-        setStatus('ERROR');
-      }
-    } catch (error) {
-      setErrorMessage("Nepodarilo sa spojiť so serverom.");
-      setStatus('ERROR');
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value, type } = e.target;
-    const fieldValue = type === 'checkbox' ? e.target.checked : value;
-
-    setFormData(prev => ({ ...prev, [name]: fieldValue }));
-  };
-
-  // ------------------------------------------------------------------
-  // ÚSPEŠNÉ ODOSLANIE
-  // ------------------------------------------------------------------
-
-  if (status === 'SUCCESS') {
-    return (
-      <div style={{ 
-          padding: '40px', 
-          textAlign: 'center', 
-          backgroundColor: '#282c34', // Tmavé pozadie
-          borderRadius: '10px',
-          border: '2px solid #00D8FF' // Pôvodná farba
-      }}>
-        <h2 style={{ color: '#00D8FF', fontSize: '24px', marginBottom: '15px' }}>
-            <IconCheck size={20} /> Žiadosť úspešne odoslaná!
-        </h2>
-        <p style={{ color: '#ccc' }}>
-          Ďakujeme. Náš detektív vás bude kontaktovať do 24 hodín.
-        </p>
-         <button 
-            onClick={() => {
-              setStatus('IDLE');
-              setFormData({ name: '', email: '', phone: '', propertyUrl: '', message: '', gdprConsent: false });
-            }}
-            style={{ marginTop: '20px', color: '#00D8FF', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline' }}
-          >
-            Odoslať ďalšiu žiadosť
-          </button>
-      </div>
-    );
-  }
-
-  // ------------------------------------------------------------------
-  // FORMULÁR
-  // ------------------------------------------------------------------
-
+export const LandingPage: React.FC<LandingProps> = ({ onNavigate }) => {
   return (
-    <div style={{ 
-      maxWidth: '600px', 
-      margin: '20px auto', 
-      backgroundColor: '#282c34', 
-      padding: '30px', 
-      borderRadius: '10px',
-      boxShadow: '0 4px 15px rgba(0, 0, 0, 0.5)'
-    }}>
-      <h2 style={{ textAlign: 'center', marginBottom: '25px', fontSize: '28px', color: '#00D8FF' }}>Objednávka preverenia</h2>
-
-      <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '15px' }}>
+    <div className="space-y-16 animate-fade-in pb-12">
+      
+      {/* Hero Section */}
+      <section className="text-center space-y-8 pt-10">
+        <div className="inline-flex items-center space-x-2 bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700 text-sm text-gold-500 mb-4">
+          <ShieldCheck size={16} />
+          <span>Profesionálne preverovanie nehnuteľností</span>
+        </div>
         
-        {status === 'ERROR' && (
-          <div style={{ backgroundColor: 'rgba(255,0,0,0.1)', border: '1px solid #ff0000', color: '#ff8888', padding: '10px', borderRadius: '5px' }}>
-            <IconAlert size={20} /> <span style={{ marginLeft: '10px', fontSize: '14px' }}>{errorMessage || "Odoslanie zlyhalo."}</span>
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-200 to-gray-500 bg-clip-text text-transparent pb-2">
+          Nekupujte mačku<br/> vo vreci.
+        </h1>
+        
+        <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
+          Odhalíme skryté vady, právne nezrovnalosti a reálnu trhovú hodnotu vašej budúcej nehnuteľnosti skôr, než podpíšete zmluvu.
+        </p>
+
+        <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+          <button 
+            onClick={() => onNavigate(ViewState.FORM)}
+            className="bg-gold-500 hover:bg-gold-600 text-gray-900 font-bold py-4 px-8 rounded-xl transition-all duration-200 transform hover:scale-105 shadow-lg shadow-gold-500/20 flex items-center justify-center space-x-2"
+          >
+            <span>Mám záujem o preverenie</span>
+            <ArrowRight size={20} />
+          </button>
+          
+          <button 
+            onClick={() => onNavigate(ViewState.QR)}
+            className="bg-gray-800 hover:bg-gray-700 text-white font-semibold py-4 px-8 rounded-xl transition-all border border-gray-700"
+          >
+            Kontaktovať detektíva
+          </button>
+        </div>
+      </section>
+
+      {/* Features Grid */}
+      <section className="grid md:grid-cols-3 gap-8 pt-12">
+        <div className="bg-gray-800/40 p-8 rounded-2xl border border-gray-800 hover:border-gold-500/30 transition-colors">
+          <div className="bg-blue-500/10 w-12 h-12 flex items-center justify-center rounded-lg mb-6 text-blue-400">
+            <Search size={24} />
           </div>
-        )}
-
-        <label style={labelStyle}>Meno a Priezvisko *</label>
-        <input required type="text" name="name" value={formData.name} onChange={handleChange} placeholder="Jozef Novák" style={inputStyle} />
-
-        <label style={labelStyle}>Telefónne číslo *</label>
-        <input required type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+421 9xx xxx xxx" style={inputStyle} />
-
-        <label style={labelStyle}>Emailová adresa *</label>
-        <input required type="email" name="email" value={formData.email} onChange={handleChange} placeholder="jozef@email.sk" style={inputStyle} />
-
-        <label style={labelStyle}>Link na nehnuteľnosť (nepovinné)</label>
-        <input type="url" name="propertyUrl" value={formData.propertyUrl} onChange={handleChange} placeholder="https://reality.sk/..." style={inputStyle} />
-
-        <label style={labelStyle}>Správa pre detektíva</label>
-        <textarea name="message" rows={4} value={formData.message} onChange={handleChange} placeholder="O čo máte konkrétne záujem?" style={{...inputStyle, resize: 'vertical' }}></textarea>
-
-        {/* GDPR Checkbox Sekcia */}
-        <div style={{ paddingTop: '10px' }}>
-          <label style={{ display: 'flex', alignItems: 'flex-start', cursor: 'pointer', fontSize: '14px', color: '#ccc' }}>
-            <input
-              required
-              type="checkbox"
-              name="gdprConsent"
-              checked={formData.gdprConsent}
-              onChange={handleChange}
-              style={{ marginRight: '10px', marginTop: '3px' }}
-            />
-            <span style={{ lineHeight: '1.4' }}>
-              Súhlasím so spracovaním osobných údajov za účelom kontaktovania ohľadom mojej objednávky. *
-            </span>
-          </label>
+          <h3 className="text-xl font-bold mb-3 text-white">Technický audit</h3>
+          <p className="text-gray-400">
+            Kontrola vlhkosti, statiky, rozvodov a skrytých závad, ktoré voľným okom neuvidíte.
+          </p>
         </div>
 
-        <button
-          type="submit"
-          disabled={status === 'SUBMITTING' || !formData.gdprConsent}
-          style={{ 
-            backgroundColor: '#00D8FF', 
-            color: 'black', 
-            fontWeight: 'bold', 
-            padding: '15px', 
-            borderRadius: '10px', 
-            border: 'none', 
-            cursor: (status === 'SUBMITTING' || !formData.gdprConsent) ? 'not-allowed' : 'pointer',
-            opacity: (status === 'SUBMITTING' || !formData.gdprConsent) ? 0.6 : 1,
-            transition: 'background-color 0.3s, opacity 0.3s',
-            boxShadow: '0 2px 10px rgba(0, 216, 255, 0.4)'
-          }}
-        >
-          {status === 'SUBMITTING' ? (
-            <><IconLoader size={20} /> <span>Odosielam...</span></>
-          ) : (
-            <span>Odoslať nezáväznú objednávku <IconSend size={20} /></span>
-          )}
-        </button>
-        
-        <p style={{ fontSize: '10px', color: '#777', textAlign: 'center', marginTop: '10px' }}>
-          Polia označené hviezdičkou (*) sú povinné.
-        </p>
-      </form>
+        <div className="bg-gray-800/40 p-8 rounded-2xl border border-gray-800 hover:border-gold-500/30 transition-colors">
+          <div className="bg-red-500/10 w-12 h-12 flex items-center justify-center rounded-lg mb-6 text-red-400">
+            <AlertTriangle size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-3 text-white">Právna analýza</h3>
+          <p className="text-gray-400">
+            Preverenie tiarch, vecných bremien, exekúcií a správnosti katastrálnych údajov.
+          </p>
+        </div>
+
+        <div className="bg-gray-800/40 p-8 rounded-2xl border border-gray-800 hover:border-gold-500/30 transition-colors">
+          <div className="bg-green-500/10 w-12 h-12 flex items-center justify-center rounded-lg mb-6 text-green-400">
+            <CheckCircle size={24} />
+          </div>
+          <h3 className="text-xl font-bold mb-3 text-white">Cenový odhad</h3>
+          <p className="text-gray-400">
+            Nezávislé posúdenie trhovej ceny, aby ste nepreplatili nehnuteľnosť o tisíce eur.
+          </p>
+        </div>
+      </section>
+
+      {/* Statistics / Trust Section */}
+      <section className="bg-gray-950 rounded-3xl p-8 md:p-12 border border-gray-800">
+        <div className="grid md:grid-cols-4 gap-8 text-center divide-y md:divide-y-0 md:divide-x divide-gray-800">
+          <div className="p-4">
+            <div className="text-4xl font-bold text-gold-500 mb-2">250+</div>
+            <div className="text-sm text-gray-400">Preverených nehnuteľností</div>
+          </div>
+          <div className="p-4">
+            <div className="text-4xl font-bold text-gold-500 mb-2">€1.3M</div>
+            <div className="text-sm text-gray-400">Ušetrených klientom</div>
+          </div>
+          <div className="p-4">
+            <div className="text-4xl font-bold text-gold-500 mb-2">37</div>
+            <div className="text-sm text-gray-400">Odhalených podvodov</div>
+          </div>
+          <div className="p-4">
+            <div className="text-4xl font-bold text-gold-500 mb-2">100%</div>
+            <div className="text-sm text-gray-400">Nezávislosť</div>
+          </div>
+        </div>
+      </section>
     </div>
   );
-};
-
-// Štýly pre formulár
-const inputStyle = { 
-  padding: '12px', 
-  borderRadius: '5px', 
-  border: '1px solid #444', 
-  backgroundColor: '#1c1f24', 
-  color: 'white',
-  width: '100%',
-  boxSizing: 'border-box'
-};
-
-const labelStyle = { 
-  fontSize: '14px', 
-  color: '#00D8FF', 
-  marginBottom: '5px' 
 };
